@@ -2,3 +2,6 @@
 /src/Hans.SinglePageApp.Web/obj
 /src/Hans.SinglePageApp.Core/bin
 /src/Hans.SinglePageApp.Core/obj
+/*.suo
+*.zip
+*.nupkg
