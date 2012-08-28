@@ -79,7 +79,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\IRepository.cs" />
     <Compile Include="Repositories\Repository.cs" />
-    <Compile Include="Utils\IInfrastructure.cs" />
     <Compile Include="Utils\Infrastructure.cs" />
   </ItemGroup>
   <ItemGroup />
