@@ -16,7 +16,7 @@ namespace Hans.SinglePageApp.Core.Repositories
 
         TDomain FindOneBy(Expression<Func<TDomain, bool>> where);
 
-        IList<TDomain> FindAll();
-        IList<TDomain> FindAllBy(Expression<Func<TDomain, bool>> where);
+        IQueryable<TDomain> FindAll();
+        IQueryable<TDomain> FindAllBy(Expression<Func<TDomain, bool>> where);
     }
 }

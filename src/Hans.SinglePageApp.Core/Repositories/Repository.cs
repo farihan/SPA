@@ -75,14 +75,14 @@ namespace Hans.SinglePageApp.Core.Repositories
             return Session.QueryOver<TDomain>().Where(where).Take(1).SingleOrDefault();
         }
 
-        public IList<TDomain> FindAll()
+        public IQueryable<TDomain> FindAll()
         {
-            return Session.QueryOver<TDomain>().List();
+            return Session.Query<TDomain>();
         }
 
-        public IList<TDomain> FindAllBy(System.Linq.Expressions.Expression<Func<TDomain, bool>> where)
+        public IQueryable<TDomain> FindAllBy(System.Linq.Expressions.Expression<Func<TDomain, bool>> where)
         {
-            return Session.QueryOver<TDomain>().Where(where).List();
+            return Session.Query<TDomain>().Where(where);
         }
     }
 }
