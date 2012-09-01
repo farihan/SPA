@@ -10,6 +10,8 @@ namespace Hans.SinglePageApp.Web.Controllers
 {
     public class HomeController : BaseController
     {
+        public IRepository<Product> ProductRepository { get; set; }
+
         public ActionResult Index()
         {
             ViewBag.Message = "Modify this template to kick-start your ASP.NET MVC application.";
