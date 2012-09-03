@@ -1,26 +1,41 @@
-﻿<table class="ko-grid">
-    <thead>
-        <tr>
-            <th>No.</th>
-            <th>Product Name</th>
-            <th>Quantity per Unit</th>
-            <th>Unit Price</th>
-            <th>Units in Stock</th>
-            <th>Units on Order</th>
-            <th>Reorder Level</th>
-            <th>Discontinued</th>
-        </tr>
-    </thead>
-    <tbody data-bind="foreach: itemsOnCurrentPage">
-        <tr>
-            <td data-bind="text: $root.itemNumber($root.pageSize * $root.currentPageIndex() + $index())"></td>
-            <td data-bind="text: ProductName"></td>
-            <td data-bind="text: QuantityPerUnit"></td>
-            <td data-bind="text: UnitPrice"></td>
-            <td data-bind="text: UnitsInStock"></td>
-            <td data-bind="text: UnitsOnOrder"></td>
-            <td data-bind="text: ReorderLevel"></td>
-            <td><input type="checkbox" data-bind="checked: Discontinued" /></td>
-        </tr>
-    </tbody>
-</table>
+﻿<div style="margin: 10px 0 10px 0;">
+    <button type="submit" data-bind="click: createProduct">Create New Product</button>
+</div>
+
+<div data-bind="visible: products().length > 0">
+    <table class="ko-grid">
+        <thead>
+            <tr>
+                <th>No.</th>
+                <th>Product Name</th>
+                <th>Quantity per Unit</th>
+                <th>Unit Price</th>
+                <th>Units in Stock</th>
+                <th>Units on Order</th>
+                <th>Reorder Level</th>
+                <th>Discontinued</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: itemsOnCurrentPage">
+            <tr>
+                <td data-bind="text: $root.itemNumber($root.pageSize * $root.currentPageIndex() + $index())"></td>
+                <td data-bind="text: ProductName"></td>
+                <td data-bind="text: QuantityPerUnit"></td>
+                <td data-bind="text: UnitPrice"></td>
+                <td data-bind="text: UnitsInStock"></td>
+                <td data-bind="text: UnitsOnOrder"></td>
+                <td data-bind="text: ReorderLevel"></td>
+                <td><input type="checkbox" data-bind="checked: Discontinued" /></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="ko-grid-pageLinks">
+        <!-- ko foreach: ko.utils.range(0, maxPageIndex) -->
+        <a href="#" data-bind="text: $data + 1, click: function() { $root.currentPageIndex($data) }, css: { selected: $data == $root.currentPageIndex() }"></a>
+        <!-- /ko -->
+    </div>
+</div>
+
+<div data-bind="visible: products().length == 0">
+    <p>No data found.</p>
+</div>

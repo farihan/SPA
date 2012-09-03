@@ -454,18 +454,21 @@ fieldset {
 }
 
 .message-error {
-    clear: both;
-    color: #e80c4d;
+    background-color:#ff0000;
+    color: #FFF;
     font-size: 1.1em;
     font-weight: bold;
-    margin: 20px 0 10px 0;
+    margin: 10px 0 10px 0;
+    padding: 10px;
 }
 
 .message-success {
-    color: #7ac0da;
-    font-size: 1.3em;
+    background-color:#00cc00/*#7ac0da*/;
+    color: #FFF;
+    font-size: 1.1em;
     font-weight: bold;
-    margin: 20px 0 10px 0;
+    margin: 10px 0 10px 0;
+    padding: 10px;
 }
 
 .error {

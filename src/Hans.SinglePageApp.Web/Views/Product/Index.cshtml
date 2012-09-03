@@ -1,5 +1,5 @@
 ﻿@{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Product(s)";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -7,16 +7,37 @@
     @Scripts.Render("~/bundles/jqueryval")
     <script type="text/javascript" src="@Url.Content("~/Scripts/knockout-2.1.0.js")"></script> 
     <script type="text/javascript">
+        // will be refactor to hans.utils.js
+        ko.bindingHandlers.flash = {
+            update: function (element, valueAccessor) {
+                var options = valueAccessor(), text = ko.utils.unwrapObservable(options.text);
+
+                // Unfortunately, .stop() doesn't clear .delay()s in jQuery 1.6, so we'll have to 
+                // manage the animation queue manually (http://bugs.jquery.com/ticket/6150)
+                clearTimeout($(element).data("flashQueue"));
+                if (text) {
+                    $(element).fadeIn(250).text(text);
+                    $(element).data("flashQueue", setTimeout(function () { $(element).fadeOut(250) }, options.duration || 5000));
+                } else
+                    $(element).hide();
+            }
+        };
+
         var ProductsViewModel = function () {
             var self = this;
 
+            self.showGrid = ko.observable(true);
+            self.showCreate = ko.observable(false);
+            self.showSuccessMessage = ko.observable(false);
+            self.showErrorMessage = ko.observable(false);
             self.itemNumber = function (index) {
                 return index + 1;
             }
-
             self.currentPageIndex = ko.observable(0);
             self.pageSize = 10;
             self.products = new ko.observableArray();
+            self.successMessage = ko.observable().extend({ notify: "always" });
+            self.errorMessage = ko.observable().extend({ notify: "always" });
 
             this.itemsOnCurrentPage = ko.computed(function () {
                 var startIndex = self.pageSize * self.currentPageIndex();
@@ -28,20 +49,53 @@
             }, self);
 
             $.getJSON("/api/productservice/getproducts", self.products);
+
+            self.createProduct = function () {
+                // hide grid
+                self.showGrid(false);
+                // show edit
+                self.showCreate(true);
+            }
+
+            self.saveProduct = function () {
+                // success
+                self.showSuccessMessage(true);
+                self.successMessage("Saved Product").errorMessage("");
+                // show grid
+                self.showGrid(true);
+                // hide edit
+                self.showCreate(false);
+
+                // error
+                //self.showErrorMessage(true);
+                //self.errorMessage("Unable to save Product").successMessage("");
+                // show grid
+                //$("#grid").show();
+                // hide edit
+                //$("#editor").hide();
+            }
+
+            self.cancelCreateProduct = function () {
+                // show grid
+                self.showGrid(true);
+                // hide edit
+                self.showEditor(false);
+            }
         }
 
         ko.applyBindings(new ProductsViewModel());
-
    </script>
 
 }
 
-<h2>Index</h2>
+<h2>@ViewBag.Title</h2>
 
-<div>
+@Html.Partial("~/Views/Shared/_Flash.cshtml")
+
+<div id="grid" data-bind="visible: showGrid">
     @Html.Partial("_Grid")
 </div>
 
-<div>
-    @Html.Partial("_Paging")
-</div>
+<div id="editor" data-bind="visible: showCreate">
+    @Html.Partial("_Editor")
+</div> 

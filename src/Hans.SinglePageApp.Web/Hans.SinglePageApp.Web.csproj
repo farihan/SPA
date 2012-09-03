@@ -268,7 +268,8 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Product\Index.cshtml" />
     <Content Include="Views\Product\_Grid.cshtml" />
-    <Content Include="Views\Product\_Paging.cshtml" />
+    <Content Include="Views\Product\_Editor.cshtml" />
+    <Content Include="Views\Shared\_Flash.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
