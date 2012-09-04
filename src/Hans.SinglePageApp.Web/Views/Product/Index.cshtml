@@ -7,11 +7,11 @@
 
 @Html.Partial("~/Views/Shared/_Flash.cshtml")
 
-<div id="grid" data-bind="visible: showGrid">
+<div id="grid" style="display: none" data-bind="visible: showGrid">
     @Html.Partial("_Grid")
 </div>
 
-<div id="editor" data-bind="visible: showCreate">
+<div id="editor" style="display: none" data-bind="visible: showCreate">
     @Html.Partial("_Editor")
 </div> 
 
@@ -20,84 +20,97 @@
     @Scripts.Render("~/bundles/jqueryval")
     <script type="text/javascript" src="@Url.Content("~/Scripts/knockout-2.1.0.js")"></script> 
     <script type="text/javascript">
-        $(document).ready(function () {
-            // will be refactor to hans.utils.js
-            ko.bindingHandlers.flash = {
-                update: function (element, valueAccessor) {
-                    var options = valueAccessor(), text = ko.utils.unwrapObservable(options.text);
+        //parsing the unobtrusive attributes when we get content via ajax
+        $(document).ajaxComplete(function (e, xhr, settings) {
+            $.validator.unobtrusive.parse(document);
 
-                    // Unfortunately, .stop() doesn't clear .delay()s in jQuery 1.6, so we'll have to 
-                    // manage the animation queue manually (http://bugs.jquery.com/ticket/6150)
-                    clearTimeout($(element).data("flashQueue"));
-                    if (text) {
-                        $(element).fadeIn(250).text(text);
-                        $(element).data("flashQueue", setTimeout(function () { $(element).fadeOut(250) }, options.duration || 5000));
-                    } else
-                        $(element).hide();
-                }
-            };
+            //make server-side generated validation errors look like the client side ones
+            $('.field-validation-error').each(function () {
+                
+            });
+        });
+        
 
-            var ProductsViewModel = function () {
-                var self = this;
+        // will be refactor to hans.utils.js
+        ko.bindingHandlers.flash = {
+            update: function (element, valueAccessor) {
+                var options = valueAccessor(), text = ko.utils.unwrapObservable(options.text);
 
-                self.showGrid = ko.observable(true);
-                self.showCreate = ko.observable(false);
-                self.showSuccessMessage = ko.observable(false);
-                self.showErrorMessage = ko.observable(false);
-                self.itemNumber = function (index) {
-                    return index + 1;
-                }
-                self.currentPageIndex = ko.observable(0);
-                self.pageSize = 10;
-                self.products = new ko.observableArray();
-                self.successMessage = ko.observable().extend({ notify: "always" });
-                self.errorMessage = ko.observable().extend({ notify: "always" });
+                // Unfortunately, .stop() doesn't clear .delay()s in jQuery 1.6, so we'll have to 
+                // manage the animation queue manually (http://bugs.jquery.com/ticket/6150)
+                clearTimeout($(element).data("flashQueue"));
+                if (text) {
+                    $(element).fadeIn(250).text(text);
+                    $(element).data("flashQueue", setTimeout(function () { $(element).fadeOut(250) }, options.duration || 5000));
+                } else
+                    $(element).hide();
+            }
+        };
 
-                this.itemsOnCurrentPage = ko.computed(function () {
-                    var startIndex = self.pageSize * self.currentPageIndex();
-                    return self.products.slice(startIndex, startIndex + self.pageSize);
-                }, self);
+        var ProductsViewModel = function () {
+            var self = this;
 
-                this.maxPageIndex = ko.computed(function () {
-                    return Math.ceil(ko.utils.unwrapObservable(self.products).length / self.pageSize) - 1;
-                }, self);
+            self.showGrid = ko.observable(true);
+            self.showCreate = ko.observable(false);
+            self.showSuccessMessage = ko.observable(false);
+            self.showErrorMessage = ko.observable(false);
+            self.itemNumber = function (index) {
+                return index + 1;
+            }
+            self.currentPageIndex = ko.observable(0);
+            self.pageSize = 10;
+            self.products = new ko.observableArray();
+            self.successMessage = ko.observable().extend({ notify: "always" });
+            self.errorMessage = ko.observable().extend({ notify: "always" });
 
-                $.getJSON("/api/productservice/getproducts", self.products);
+            this.itemsOnCurrentPage = ko.computed(function () {
+                var startIndex = self.pageSize * self.currentPageIndex();
+                return self.products.slice(startIndex, startIndex + self.pageSize);
+            }, self);
 
-                self.createProduct = function () {
-                    // hide grid
-                    self.showGrid(false);
-                    // show edit
-                    self.showCreate(true);
-                }
+            this.maxPageIndex = ko.computed(function () {
+                return Math.ceil(ko.utils.unwrapObservable(self.products).length / self.pageSize) - 1;
+            }, self);
 
-                self.saveProduct = function () {
-                    // success
-                    self.showSuccessMessage(true);
-                    self.successMessage("Saved Product").errorMessage("");
-                    // show grid
-                    self.showGrid(true);
-                    // hide edit
-                    self.showCreate(false);
+            $.getJSON("/api/productservice/getproducts", self.products);
 
-                    // error
-                    //self.showErrorMessage(true);
-                    //self.errorMessage("Unable to save Product").successMessage("");
-                    // show grid
-                    //$("#grid").show();
-                    // hide edit
-                    //$("#editor").hide();
-                }
-
-                self.cancelCreateProduct = function () {
-                    // show grid
-                    self.showGrid(true);
-                    // hide edit
-                    self.showCreate(false);
-                }
+            self.createProduct = function () {
+                // hide grid
+                self.showGrid(false);
+                // show edit
+                self.showCreate(true);
             }
 
-            ko.applyBindings(new ProductsViewModel());
-        });
+            self.saveProduct = function () {
+                ko.utils.postJson(location.href, { gifts: this.gifts });
+
+                // success
+                self.showSuccessMessage(true);
+                self.successMessage("Saved Product").errorMessage("");
+                // show grid
+                self.showGrid(true);
+                // hide edit
+                self.showCreate(false);
+
+                // error
+                //self.showErrorMessage(true);
+                //self.errorMessage("Unable to save Product").successMessage("");
+                // show grid
+                //$("#grid").show();
+                // hide edit
+                //$("#editor").hide();
+            }
+
+            self.cancelCreateProduct = function () {
+                // show grid
+                self.showGrid(true);
+                // hide edit
+                self.showCreate(false);
+            }
+        }
+        var viewModel = new ProductsViewModel();
+
+        ko.applyBindings(viewModel);
+        $.validator.setDefaults({ submitHandler: function (){ viewModel.saveProduct($(document)); } });
    </script>
 }

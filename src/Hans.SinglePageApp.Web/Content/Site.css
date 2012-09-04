@@ -489,6 +489,10 @@ input[type="text"].input-validation-error,
 input[type="password"].input-validation-error {
     border: 1px solid #e80c4d;
 }
+.input-validation-error,
+.input-validation-error {
+    border: 1px solid #e80c4d;
+}
 
 .validation-summary-errors {
     color: #e80c4d;
