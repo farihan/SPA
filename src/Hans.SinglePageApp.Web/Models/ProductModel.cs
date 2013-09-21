@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Web;
+using System.Web.Mvc;
 
 namespace Hans.SinglePageApp.Web.Models
 {
@@ -50,5 +51,8 @@ namespace Hans.SinglePageApp.Web.Models
 
         [Display(Name = "Discontinued")]
         public bool Discontinued { get; set; }
+
+        public IEnumerable<SelectListItem> AvailableSuppliers { get; set; }
+        public IEnumerable<SelectListItem> AvailableCategories { get; set; }
     }
 }

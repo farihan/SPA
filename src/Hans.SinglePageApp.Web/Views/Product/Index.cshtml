@@ -1,116 +1,135 @@
-﻿@{
+﻿@model Hans.SinglePageApp.Web.Models.ProductModel
+
+@{
     ViewBag.Title = "Product(s)";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>@ViewBag.Title</h2>
 
-@Html.Partial("~/Views/Shared/_Flash.cshtml")
+@*<div class="btn-toolbar" data-bind="visible: viewModel.timesheetsSelected() > 0">
+    <div class="btn-group">
+        <span class="btn btn-primary">Actions</span>
+        <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="">
+            <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li><a id="new-timesheet"
+                   data-toggle="modal" 
+                   href="#product-delete">Delete</a></li>
+        </ul>
+    </div>
+</div>*@
 
-<div id="grid" style="display: none" data-bind="visible: showGrid">
-    @Html.Partial("_Grid")
+<div class="pull-right">
+    <a id="create-product" class="btn btn-primary" data-toggle="modal" href="#product-modal">Create Product</a>
 </div>
 
-<div id="editor" style="display: none" data-bind="visible: showCreate">
-    @Html.Partial("_Editor")
-</div> 
+<div class="modal hide fade" id="product-modal">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Product</h3>
+    </div>
+
+    <form id="Product" data-bind="submit: function(form) { postProduct(form, 'product-modal') }">
+        <div class="modal-body">
+            @{ Html.RenderPartial("_Editor", Model); }
+        </div>
+
+        <div class="modal-footer">
+            <a href="#" class="btn" data-dismiss="modal">Cancel</a>
+            <input type="submit" class="btn btn-primary" value="Save" />
+        </div>
+    </form>
+</div>
+
+<div id="basic-grid">
+    @Html.Partial("_BasicGrid")
+</div>
 
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
-    <script type="text/javascript" src="@Url.Content("~/Scripts/knockout-2.1.0.js")"></script> 
-    <script type="text/javascript">
-        //parsing the unobtrusive attributes when we get content via ajax
-        $(document).ajaxComplete(function (e, xhr, settings) {
-            $.validator.unobtrusive.parse(document);
+<script type="text/javascript" src="@Url.Content("~/Scripts/knockout-2.1.0.js")"></script>
+<script type="text/javascript">
+    $(function () {
+        ko.applyBindings(productViewModel);
+        productViewModel.loadProducts();
+    });
 
-            //make server-side generated validation errors look like the client side ones
-            $('.field-validation-error').each(function () {
-                
-            });
-        });
-        
+    function product(product) {
+        this.productID = ko.observable(product.ProductID);
+        this.productName = ko.observable(product.ProductName);
+        this.quantityPerUnit = ko.observable(product.QuantityPerUnit);
+        this.unitPrice = ko.observable(product.UnitPrice);
+        this.unitsInStock = ko.observable(product.UnitsInStock);
+        this.unitsOnOrder = ko.observable(product.UnitsOnOrder);
+        this.reorderLevel = ko.observable(product.ReorderLevel);
+        this.discontinued = ko.observable(product.Discontinued);
+    }
 
-        // will be refactor to hans.utils.js
-        ko.bindingHandlers.flash = {
-            update: function (element, valueAccessor) {
-                var options = valueAccessor(), text = ko.utils.unwrapObservable(options.text);
-
-                // Unfortunately, .stop() doesn't clear .delay()s in jQuery 1.6, so we'll have to 
-                // manage the animation queue manually (http://bugs.jquery.com/ticket/6150)
-                clearTimeout($(element).data("flashQueue"));
-                if (text) {
-                    $(element).fadeIn(250).text(text);
-                    $(element).data("flashQueue", setTimeout(function () { $(element).fadeOut(250) }, options.duration || 5000));
-                } else
-                    $(element).hide();
-            }
-        };
-
-        var ProductsViewModel = function () {
+    var productViewModel = {
+        products: ko.observableArray([]),
+        itemNumber: function (index) {
+            return index + 1;
+        },
+        loadProducts: function () {
             var self = this;
 
-            self.showGrid = ko.observable(true);
-            self.showCreate = ko.observable(false);
-            self.showSuccessMessage = ko.observable(false);
-            self.showErrorMessage = ko.observable(false);
-            self.itemNumber = function (index) {
-                return index + 1;
-            }
-            self.currentPageIndex = ko.observable(0);
-            self.pageSize = 10;
-            self.products = new ko.observableArray();
-            self.successMessage = ko.observable().extend({ notify: "always" });
-            self.errorMessage = ko.observable().extend({ notify: "always" });
+            $.getJSON('@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "ProductService" })',
+                    function (products) {
+                        self.products.removeAll();
 
-            this.itemsOnCurrentPage = ko.computed(function () {
-                var startIndex = self.pageSize * self.currentPageIndex();
-                return self.products.slice(startIndex, startIndex + self.pageSize);
-            }, self);
+                        $.each(products, function (index, item) {
+                            self.products.push(new product(item));
+                        });
+                    });
+            },
 
-            this.maxPageIndex = ko.computed(function () {
-                return Math.ceil(ko.utils.unwrapObservable(self.products).length / self.pageSize) - 1;
-            }, self);
+            resetForm: function (formId) {
+                var form = $('#' + formId);
+                form.validate().resetForm();
+                form.get(0).reset();
+            },
 
-            $.getJSON("/api/productservice/getproducts", self.products);
+            postProduct: function (form, modalId) {
+                form = $(form);
 
-            self.createProduct = function () {
-                // hide grid
-                self.showGrid(false);
-                // show edit
-                self.showCreate(true);
-            }
+                if (!form.valid())
+                    return;
 
-            self.saveProduct = function () {
-                ko.utils.postJson(location.href, { gifts: this.gifts });
+                var json = JSON.stringify(this._getProductFrom(form));
 
-                // success
-                self.showSuccessMessage(true);
-                self.successMessage("Saved Product").errorMessage("");
-                // show grid
-                self.showGrid(true);
-                // hide edit
-                self.showCreate(false);
+                var self = this;
+                $.ajax({
+                    url: '@Url.RouteUrl("DefaultApi", new { httproute = "", controller = "ProductService" })',
+                    type: 'POST',
+                    data: json,
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    success: function (jsonObject) {
+                        self.products.push(new product(jsonObject));
+                        $('#' + modalId).modal('hide');
+                    }
+                });
+            },
 
-                // error
-                //self.showErrorMessage(true);
-                //self.errorMessage("Unable to save Product").successMessage("");
-                // show grid
-                //$("#grid").show();
-                // hide edit
-                //$("#editor").hide();
+            _getProductFrom: function (form) {
+                form = $(form);
+                var timesheet = {};
+                form.find('input[type!=submit],select').each(function () {
+                    product[this.name] = $(this).val();
+                });
+
+                return product;
             }
 
-            self.cancelCreateProduct = function () {
-                // show grid
-                self.showGrid(true);
-                // hide edit
-                self.showCreate(false);
-            }
-        }
-        var viewModel = new ProductsViewModel();
+    };
 
-        ko.applyBindings(viewModel);
-        $.validator.setDefaults({ submitHandler: function (){ viewModel.saveProduct($(document)); } });
-   </script>
-}
+    $('#product-modal').on('hide', function () {
+        var form = $('#Product');
+        form.validate().resetForm();
+        form.get(0).reset();
+        form.removeData('product');
+        form.find("input[type='hidden'][id='id']").remove();
+        form.find("span").empty();
+    });
+</script>

@@ -14,7 +14,7 @@ namespace Hans.SinglePageApp.Web.Controllers
     {
         public IRepository<Product> ProductRepository { get; set; }
 
-        public IQueryable<ProductModel> GetProducts()
+        public HttpResponseMessage Get()
         {
             var list = ProductRepository.FindAll().Select(x => new ProductModel{
                 ProductID = x.ProductID,
@@ -29,7 +29,11 @@ namespace Hans.SinglePageApp.Web.Controllers
                 Discontinued = x.Discontinued
             });
 
-            return list;
+            var response = Request.CreateResponse(HttpStatusCode.OK, list);
+            var uri = Url.Route(null, null);
+            response.Headers.Location = new Uri(Request.RequestUri, uri);
+
+            return response;
         }
     }
 }

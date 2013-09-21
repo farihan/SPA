@@ -4,51 +4,52 @@
         <meta charset="utf-8" />
         <title>@ViewBag.Title - My ASP.NET MVC Application</title>
         <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-        <meta name="viewport" content="width=device-width" />
-        @Styles.Render("~/Content/themes/base/css", "~/Content/css")
-        @Scripts.Render("~/bundles/modernizr")
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"> @*Responsive design*@
+        <link href="@Url.Content("~/Content/bootstrap.css")" rel="stylesheet" type="text/css" />
+        <link href="@Url.Content("~/Content/bootstrap-responsive.css")" rel="stylesheet" type="text/css" />
+        <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css" />
+        <script src="@Url.Content("~/Scripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/knockout-2.1.0.js")" type="text/javascript"></script>
     </head>
     <body>
-        <header>
-            <div class="content-wrapper">
-                <div class="float-left">
-                    <p class="site-title">@Html.ActionLink("Northwind Demo", "Index", "Home")</p>
-                </div>
-                <div class="float-right">
-                    <section id="login">
-                    </section>
-                    <nav>
-                        <ul id="menu">
-                            <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                            <li>@Html.ActionLink("About", "About", "Home")</li>
-                            <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
-                            <li>@Html.ActionLink("Product", "Index", "Product")</li>
-                        </ul>
-                    </nav>
-                </div>
-            </div>
-        </header>
-        <div id="body">
-            @RenderSection("featured", required: false)
-            <section class="content-wrapper main-content clear-fix">
-                @RenderBody()
-            </section>
-        </div>
-        <footer>
-            <div class="content-wrapper">
-                <div class="float-left">
-                    <p>&copy; @DateTime.Now.Year - My ASP.NET MVC Application</p>
-                </div>
-                <div class="float-right">
-                    <ul id="social">
-                        <li><a href="http://facebook.com" class="facebook">Facebook</a></li>
-                        <li><a href="http://twitter.com" class="twitter">Twitter</a></li>
-                    </ul>
-                </div>
-            </div>
-        </footer>
+        @{
+            var url = Request.Url.ToString().ToLower();
+            var page = url.Substring(url.LastIndexOf("/") + 1);
+        }
 
-        @Scripts.Render("~/bundles/jquery")
-        @RenderSection("scripts", required: false)
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="brand" href="#">Northwind Demo</a>
+                    <div class="nav-collapse">
+                        <ul class="nav">
+                            <li class="@(page == "" ? "active" : "")"><a href="@Url.Action("Index", "Home")">Home</a></li>
+                            <li class="@(page == "about" ? "active" : "")"><a href="@Url.Action("About", "Home")">About</a></li>
+                            <li class="@(page == "contact" ? "active" : "")"><a href="@Url.Action("Contact", "Home")">Contact</a></li>
+                            <li class="@(page == "product" ? "active" : "")"><a href="@Url.Action("Index", "Product")">Product</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            @RenderBody()   
+
+            <hr>
+
+            <footer>
+                <p>&copy; @DateTime.Now.Year - My ASP.NET MVC Application</p>
+            </footer> 
+        </div>
+        
+        <script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/bootstrap.min.js")" type="text/javascript"></script>
     </body>
 </html>

@@ -49,6 +49,8 @@ namespace Hans.SinglePageApp.Web
             builder.RegisterApiControllers(Assembly.Load(AssemblyType.Web)).PropertiesAutowired();
             // register repositories
             builder.RegisterType<Repository<Product>>().As<IRepository<Product>>();
+            builder.RegisterType<Repository<Supplier>>().As<IRepository<Supplier>>();
+            builder.RegisterType<Repository<Category>>().As<IRepository<Category>>();
            
             // register services
             //builder.RegisterType<CurrentUserService>().As<ICurrentUserService>();
